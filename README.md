@@ -1,12 +1,17 @@
-# DoGet Download Accelerator
+<div align="center">
+
+# ⚡ DoGet Download Accelerator
 
 [![Chrome Web Store](https://img.shields.io/badge/Chrome-Extension-green?logo=googlechrome&logoColor=white)](https://chrome.google.com/webstore)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Manifest V3](https://img.shields.io/badge/Manifest-V3-orange)](https://developer.chrome.com/docs/extensions/mv3/)
 
-> Right-click any download link to accelerate it via [DoGet](https://doget.nocsdn.com/). Supports GitHub Releases and general file downloads.
+**Right-click any download link to accelerate it via [DoGet](https://doget.nocsdn.com/).**
+Supports GitHub Releases and general file downloads.
 
 **简体中文** | [English](./docs/README.en.md)
+
+</div>
 
 ---
 
@@ -21,9 +26,13 @@
 
 ## 📸 Screenshots
 
+<div align="center">
+
 | Right-click Menu | Popup UI |
 |---|---|
 | ![Right-click Menu](docs/right-click-menu.png) | ![Popup UI](docs/popup-ui.png) |
+
+</div>
 
 ## 🚀 Installation
 
@@ -104,9 +113,6 @@ doget-chrome-extension/
 ├── _locales/            # i18n message bundles
 │   ├── en/              # English
 │   └── zh_CN/           # Simplified Chinese
-├── .github/
-│   └── workflows/
-│       └── ci.yml       # GitHub Actions CI
 ├── icons/               # Extension icons (16/48/128px)
 ├── src/
 │   ├── background.js    # Service worker (context menu + API)
@@ -115,7 +121,6 @@ doget-chrome-extension/
 │   └── popup.js         # Popup logic
 ├── manifest.json        # Extension manifest (MV3)
 ├── package.json         # Dev tooling
-├── .eslintrc.json       # ESLint config
 ├── .prettierrc          # Prettier config
 ├── .gitignore
 ├── CHANGELOG.md
