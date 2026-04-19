@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DoGet 加速下载</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1 class="brand">
+        <span class="brand-do">Do</span><span class="brand-get">Get</span>
+      </h1>
+      <p class="subtitle" data-i18n="popupSubtitle"></p>
+    </header>
+
+    <form id="download-form" class="form">
+      <input
+        id="url-input"
+        type="url"
+        data-i18n-placeholder="popupPlaceholder"
+        autocomplete="off"
+        required
+      />
+      <button id="submit-btn" type="submit" data-i18n="popupSubmit"></button>
+    </form>
+
+    <div id="status" class="status" hidden></div>
+
+    <footer class="footer">
+      <p data-i18n="popupHint"></p>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

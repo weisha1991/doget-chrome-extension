@@ -1,0 +1,47 @@
+{
+  "extensionName": {
+    "message": "DoGet Download Accelerator"
+  },
+  "extensionDescription": {
+    "message": "Right-click any download link to accelerate it via DoGet. Supports GitHub Releases and general file downloads."
+  },
+  "contextMenuTitle": {
+    "message": "Accelerate download with DoGet"
+  },
+  "popupTitle": {
+    "message": "DoGet Accelerator"
+  },
+  "popupSubtitle": {
+    "message": "File download accelerator"
+  },
+  "popupPlaceholder": {
+    "message": "Paste download URL, e.g. GitHub Release URL"
+  },
+  "popupSubmit": {
+    "message": "Accelerate Download"
+  },
+  "popupFetching": {
+    "message": "Fetching accelerated link..."
+  },
+  "popupSuccess": {
+    "message": "Download started!"
+  },
+  "popupFailed": {
+    "message": "Download failed. Please try again."
+  },
+  "popupCommError": {
+    "message": "Failed to communicate with background."
+  },
+  "popupHint": {
+    "message": "Right-click any link → \"Accelerate download with DoGet\""
+  },
+  "notifyFailedTitle": {
+    "message": "DoGet Acceleration Failed"
+  },
+  "notifyFailedMessage": {
+    "message": "Could not get accelerated link: $1"
+  },
+  "notifyApiNoToken": {
+    "message": "API returned success but no valid token was found."
+  }
+}

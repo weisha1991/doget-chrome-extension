@@ -1,0 +1,47 @@
+{
+  "extensionName": {
+    "message": "DoGet 加速下载"
+  },
+  "extensionDescription": {
+    "message": "右键任意下载链接即可通过 DoGet 加速下载。支持 GitHub Releases 及通用文件下载。"
+  },
+  "contextMenuTitle": {
+    "message": "DoGet 加速下载此链接"
+  },
+  "popupTitle": {
+    "message": "DoGet 加速下载"
+  },
+  "popupSubtitle": {
+    "message": "文件下载加速"
+  },
+  "popupPlaceholder": {
+    "message": "粘贴下载链接，如 GitHub Release URL"
+  },
+  "popupSubmit": {
+    "message": "加速下载"
+  },
+  "popupFetching": {
+    "message": "正在获取加速链接..."
+  },
+  "popupSuccess": {
+    "message": "下载已开始!"
+  },
+  "popupFailed": {
+    "message": "下载失败，请重试"
+  },
+  "popupCommError": {
+    "message": "与后台通信失败"
+  },
+  "popupHint": {
+    "message": "右键任意链接 → 「DoGet 加速下载此链接」即可"
+  },
+  "notifyFailedTitle": {
+    "message": "DoGet 加速下载失败"
+  },
+  "notifyFailedMessage": {
+    "message": "无法获取加速链接: $1"
+  },
+  "notifyApiNoToken": {
+    "message": "API 返回成功但未包含有效的下载凭证。"
+  }
+}
