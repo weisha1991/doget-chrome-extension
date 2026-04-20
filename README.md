@@ -30,7 +30,7 @@ Supports GitHub Releases and general file downloads.
 
 | Right-click Menu | Popup UI |
 |---|---|
-| ![Right-click Menu](docs/right-click-menu.png) | ![Popup UI](docs/popup-ui.png) |
+| ![Right-click Menu](docs/right_click.png) | ![Popup UI](docs/pop-ui.png) |
 
 </div>
 
