@@ -12,6 +12,8 @@ const FILES_TO_COPY = [
   { src: "src/popup.html", dest: "src/popup.html" },
   { src: "src/popup.css", dest: "src/popup.css" },
   { src: "src/popup.js", dest: "src/popup.js" },
+  { src: "src/content.js", dest: "src/content.js" },
+  { src: "src/content.css", dest: "src/content.css" },
   { src: "icons", dest: "icons" },
   { src: "_locales", dest: "_locales" },
 ];

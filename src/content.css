@@ -1,0 +1,34 @@
+.doget-btn-wrapper {
+  display: inline-block;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.doget-accelerate-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 12px;
+  border: 1px solid #22c55e;
+  border-radius: 6px;
+  background: transparent;
+  color: #22c55e;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 20px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.doget-accelerate-btn:hover {
+  background: #22c55e;
+  color: #fff;
+}
+
+.doget-accelerate-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: transparent;
+  color: #22c55e;
+}
