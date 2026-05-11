@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>布局冲突检测测试 - DoGet</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    h1 {
+      color: #333;
+      border-bottom: 2px solid #0969da;
+      padding-bottom: 10px;
+    }
+    .test-section {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+    .test-section h2 {
+      margin-top: 0;
+      color: #0969da;
+      font-size: 18px;
+    }
+    .test-case {
+      margin: 15px 0;
+      padding: 10px;
+      background: #f6f8fa;
+      border-left: 3px solid #0969da;
+    }
+    .test-case h3 {
+      margin: 0 0 10px 0;
+      font-size: 14px;
+      color: #666;
+    }
+    .narrow-container {
+      width: 200px;
+      overflow: hidden;
+      border: 2px dashed #d73a49;
+      padding: 5px;
+    }
+    .tight-layout {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+    .existing-btn {
+      margin-left: 2px;
+      padding: 4px 8px;
+      background: #f6f8fa;
+      border: 1px solid #d0d7de;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    .normal-layout {
+      margin: 10px 0;
+    }
+    a {
+      color: #0969da;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    .expected {
+      margin-top: 10px;
+      padding: 8px;
+      background: #fff8c5;
+      border-left: 3px solid #bf8700;
+      font-size: 13px;
+    }
+    .expected strong {
+      color: #bf8700;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧪 布局冲突检测测试</h1>
+  <p>本页面用于测试 DoGet 扩展的布局冲突检测与自动降级功能。</p>
+
+  <!-- 测试组 1: 正常场景 -->
+  <div class="test-section">
+    <h2>✅ 测试组 1: 正常场景（应注入按钮）</h2>
+
+    <div class="test-case">
+      <h3>Case 1.1: 标准布局 - 链接后有足够空间</h3>
+      <div class="normal-layout">
+        <a href="https://example.com/files/document.pdf">下载文档.pdf</a>
+      </div>
+      <div class="expected">
+        <strong>预期：</strong>应在链接右侧注入 "⚡ 加速下载" 按钮
+      </div>
+    </div>
+
+    <div class="test-case">
+      <h3>Case 1.2: 列表布局</h3>
+      <ul>
+        <li><a href="https://example.com/software-v1.0.zip">软件 v1.0.zip</a></li>
+        <li><a href="https://example.com/software-v2.0.tar.gz">软件 v2.0.tar.gz</a></li>
+      </ul>
+      <div class="expected">
+        <strong>预期：</strong>每个链接右侧都应注入按钮
+      </div>
+    </div>
+
+    <div class="test-case">
+      <h3>Case 1.3: 段落中的链接</h3>
+      <p>
+        请下载最新版本：<a href="https://example.com/app-installer.exe">安装程序.exe</a>，
+        或者下载源代码：<a href="https://github.com/user/repo/archive/refs/tags/v1.0.zip">源码.zip</a>
+      </p>
+      <div class="expected">
+        <strong>预期：</strong>两个链接右侧都应注入按钮
+      </div>
+    </div>
+  </div>
+
+  <!-- 测试组 2: 冲突场景 - 已有按钮紧贴 -->
+  <div class="test-section">
+    <h2>⚠️ 测试组 2: 已有按钮紧贴（应自动降级）</h2>
+
+    <div class="test-case">
+      <h3>Case 2.1: 链接后紧跟按钮（margin < 4px）</h3>
+      <div class="tight-layout">
+        <a href="https://example.com/file1.zip">下载文件1.zip</a>
+        <button class="existing-btn">详情</button>
+      </div>
+      <div class="expected">
+        <strong>预期：</strong>检测到紧贴按钮，不注入 DoGet 按钮（自动降级为仅右键菜单）
+      </div>
+    </div>
+
+    <div class="test-case">
+      <h3>Case 2.2: 链接后紧跟链接按钮</h3>
+      <div class="tight-layout">
+        <a href="https://example.com/file2.dmg">下载文件2.dmg</a>
+        <a href="#" class="existing-btn">查看</a>
+      </div>
+      <div class="expected">
+        <strong>预期：</strong>检测到紧贴链接按钮，不注入 DoGet 按钮
+      </div>
+    </div>
+  </div>
+
+  <!-- 测试组 3: 冲突场景 - 容器宽度不足 -->
+  <div class="test-section">
+    <h2>⚠️ 测试组 3: 容器宽度不足（应自动降级）</h2>
+
+    <div class="test-case">
+      <h3>Case 3.1: 窄容器（200px）</h3>
+      <div class="narrow-container">
+        <a href="https://example.com/very-long-filename-document.pdf">一个很长的文件名.pdf</a>
+      </div>
+      <div class="expected">
+        <strong>预期：</strong>检测到按钮会超出容器边界，不注入按钮
+      </div>
+    </div>
+
+    <div class="test-case">
+      <h3>Case 3.2: 窄容器中的短链接</h3>
+      <div class="narrow-container">
+        <a href="https://example.com/app.exe">app.exe</a>
+      </div>
+      <div class="expected">
+        <strong>预期：</strong>短链接可能有足够空间，应注入按钮
+      </div>
+    </div>
+  </div>
+
+  <!-- 测试组 4: 边缘场景 -->
+  <div class="test-section">
+    <h2>🔍 测试组 4: 边缘场景</h2>
+
+    <div class="test-case">
+      <h3>Case 4.1: 表格中的链接</h3>
+      <table border="1" cellpadding="10">
+        <tr>
+          <td>文件名</td>
+          <td><a href="https://example.com/data.csv">data.csv</a></td>
+        </tr>
+        <tr>
+          <td>安装包</td>
+          <td><a href="https://example.com/setup.msi">setup.msi</a></td>
+        </tr>
+      </table>
+      <div class="expected">
+        <strong>预期：</strong>根据单元格宽度决定是否注入
+      </div>
+    </div>
+
+    <div class="test-case">
+      <h3>Case 4.2: 隐藏元素中的链接</h3>
+      <div style="display: none;">
+        <a href="https://example.com/hidden.zip">隐藏的下载链接.zip</a>
+      </div>
+      <div class="expected">
+        <strong>预期：</strong>隐藏元素可能导致 getBoundingClientRect 返回 0，应自动降级
+      </div>
+    </div>
+
+    <div class="test-case">
+      <h3>Case 4.3: 绝对定位的链接</h3>
+      <div style="position: relative; height: 50px;">
+        <a href="https://example.com/positioned.deb" style="position: absolute; right: 10px;">positioned.deb</a>
+      </div>
+      <div class="expected">
+        <strong>预期：</strong>根据实际位置计算是否有空间
+      </div>
+    </div>
+  </div>
+
+  <!-- 验证说明 -->
+  <div class="test-section">
+    <h2>📋 验证步骤</h2>
+    <ol>
+      <li>确保 DoGet 扩展已加载并启用</li>
+      <li>刷新本页面</li>
+      <li>检查每个测试用例的实际表现是否符合预期</li>
+      <li>对于自动降级的场景，右键点击链接应仍能看到 "DoGet 加速下载" 菜单项</li>
+      <li>打开开发者工具控制台，查看是否有错误或警告</li>
+    </ol>
+  </div>
+
+  <!-- 统计信息 -->
+  <div class="test-section">
+    <h2>📊 测试统计</h2>
+    <p>总测试用例数：<strong>13</strong></p>
+    <ul>
+      <li>应注入按钮：5 个</li>
+      <li>应自动降级：4 个</li>
+      <li>边缘场景：4 个</li>
+    </ul>
+  </div>
+</body>
+</html>

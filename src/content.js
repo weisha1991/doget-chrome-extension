@@ -1,14 +1,14 @@
 /**
- * DoGet Content Script — injects accelerate buttons on GitHub Release pages.
+ * DoGet Content Script — injects accelerate buttons on download links.
  *
- * GitHub loads asset lists dynamically, so MutationObserver is used to detect
- * new asset link elements as they appear in the DOM. A batch accelerate toolbar
- * is injected at the top of the page when assets are detected.
+ * Supports GitHub Release pages and generic download sites.
+ * Uses MutationObserver to detect dynamically loaded links.
  */
 
 const INJECTED_MARKER = "data-doget-injected";
 const TOOLBAR_ID = "doget-batch-toolbar";
 const ASSET_HREF_PATTERN = /\/releases\/download\//;
+const LINK_COUNT_LIMIT = 100;
 
 const collectedLinks = new Map();
 
@@ -16,6 +16,127 @@ function msg(key, substitutions) {
   return chrome.i18n.getMessage(key, substitutions);
 }
 
+// ---- Performance optimization layer ----
+
+/**
+ * Debounce utility function
+ * @param {Function} fn - Function to debounce
+ * @param {number} delay - Delay in milliseconds
+ * @returns {Function} Debounced function
+ */
+function debounce(fn, delay) {
+  let timeoutId = null;
+  return function (...args) {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+    timeoutId = setTimeout(() => {
+      fn.apply(this, args);
+      timeoutId = null;
+    }, delay);
+  };
+}
+
+/**
+ * Check if link count limit is reached
+ * @returns {boolean} True if limit reached
+ */
+function isLinkLimitReached() {
+  return collectedLinks.size >= LINK_COUNT_LIMIT;
+}
+
+// ---- LinkDetector: Universal download link recognition ----
+
+/**
+ * Strategy A: Match file extensions
+ */
+function matchFileExtension(href) {
+  const extensions = [
+    ".zip", ".tar.gz", ".7z", ".rar", ".bz2", ".xz",
+    ".exe", ".dmg", ".deb", ".rpm", ".apk", ".msi",
+    ".pkg", ".AppImage", ".flatpak", ".snap",
+    ".tar", ".tgz", ".iso", ".img", ".bin"
+  ];
+
+  const lowerHref = href.toLowerCase();
+  return extensions.some(ext => lowerHref.endsWith(ext));
+}
+
+/**
+ * Strategy B: Match URL patterns
+ */
+function matchUrlPattern(href) {
+  const lowerHref = href.toLowerCase();
+
+  // Path patterns
+  const pathPatterns = [
+    "/download/", "/releases/", "/dist/", "/files/", "/attachments/"
+  ];
+  if (pathPatterns.some(pattern => lowerHref.includes(pattern))) {
+    return true;
+  }
+
+  // Domain patterns
+  try {
+    const url = new URL(href);
+    const hostname = url.hostname.toLowerCase();
+    const domainPatterns = ["cdn.", "dl.", "download.", "files.", "releases."];
+    if (domainPatterns.some(pattern => hostname.startsWith(pattern))) {
+      return true;
+    }
+  } catch {
+    // Invalid URL, skip domain check
+  }
+
+  // Query parameter patterns
+  const queryPatterns = ["?download=", "?file=", "?attachment="];
+  if (queryPatterns.some(pattern => lowerHref.includes(pattern))) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Strategy C: Check download attribute
+ */
+function matchDownloadAttribute(el) {
+  return el.hasAttribute("download");
+}
+
+/**
+ * Main entry: Determine if element is a download link
+ * Combines 3 strategies: A OR B → high confidence; only C → medium confidence
+ */
+function isDownloadLink(el) {
+  if (el.tagName !== "A" || !el.href) {
+    return false;
+  }
+
+  if (el.hasAttribute(INJECTED_MARKER)) {
+    return false;
+  }
+
+  const strategyA = matchFileExtension(el.href);
+  const strategyB = matchUrlPattern(el.href);
+  const strategyC = matchDownloadAttribute(el);
+
+  // High confidence: A OR B
+  if (strategyA || strategyB) {
+    return true;
+  }
+
+  // Medium confidence: only C
+  if (strategyC) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * GitHub Release specific check (preserves existing behavior)
+ */
 function isAssetLink(el) {
   return (
     el.tagName === "A" &&
@@ -26,7 +147,76 @@ function isAssetLink(el) {
 
 // ---- Single link button injection ----
 
+/**
+ * Check if injecting button would cause layout conflict
+ * @param {HTMLElement} linkEl - The link element
+ * @returns {boolean} True if conflict detected
+ */
+function checkLayoutConflict(linkEl) {
+  // Check 1: Parent element exists
+  if (!linkEl.parentNode) {
+    return true;
+  }
+
+  // Check 2: Check if there's already a button tightly adjacent (margin < 4px)
+  // Skip text nodes and find the next element sibling
+  let nextElement = linkEl.nextSibling;
+  while (nextElement && nextElement.nodeType !== Node.ELEMENT_NODE) {
+    nextElement = nextElement.nextSibling;
+  }
+
+  if (nextElement) {
+    // Check if it's a button or button-like element
+    const tagName = nextElement.tagName.toLowerCase();
+    const isButtonLike = tagName === "button" || tagName === "a" || nextElement.classList.contains("btn");
+
+    if (isButtonLike) {
+      // Check spacing between link and button
+      const linkRect = linkEl.getBoundingClientRect();
+      const nextRect = nextElement.getBoundingClientRect();
+      const gap = nextRect.left - linkRect.right;
+
+      // If gap is less than 8px, consider it a conflict
+      if (gap < 8) {
+        return true;
+      }
+    }
+  }
+
+  // Check 3: Check if button would overflow parent container
+  try {
+    const parentRect = linkEl.parentNode.getBoundingClientRect();
+    const linkRect = linkEl.getBoundingClientRect();
+
+    // Estimate button width (approximately 100px based on CSS)
+    const estimatedButtonWidth = 100;
+    const buttonRightEdge = linkRect.right + 8 + estimatedButtonWidth; // 8px margin-left
+
+    // Check if button would overflow parent's right edge
+    if (buttonRightEdge > parentRect.right) {
+      return true;
+    }
+  } catch (e) {
+    // If getBoundingClientRect fails, assume conflict to be safe
+    return true;
+  }
+
+  return false;
+}
+
 function injectButton(linkEl) {
+  // Check link count limit
+  if (isLinkLimitReached()) {
+    return;
+  }
+
+  // Check layout conflict
+  if (checkLayoutConflict(linkEl)) {
+    // Auto-degrade: skip injection, right-click menu still available
+    linkEl.setAttribute(INJECTED_MARKER, "true");
+    return;
+  }
+
   linkEl.setAttribute(INJECTED_MARKER, "true");
 
   const btn = document.createElement("button");
@@ -47,6 +237,20 @@ function injectButton(linkEl) {
 
   collectedLinks.set(linkEl.href, btn);
   updateToolbar();
+}
+
+// ---- Scene detection and routing ----
+
+/**
+ * Detect current page scene
+ * @returns {string} "github-release" or "generic"
+ */
+function detectScene() {
+  const url = window.location.href;
+  if (/github\.com\/.*\/releases/.test(url)) {
+    return "github-release";
+  }
+  return "generic";
 }
 
 async function handleAccelerate(btn, url) {
@@ -120,6 +324,11 @@ function ensureToolbar() {
 }
 
 function updateToolbar() {
+  // Only show batch toolbar in GitHub Release scene
+  if (currentScene !== "github-release") {
+    return;
+  }
+
   if (collectedLinks.size === 0) return;
   const toolbar = ensureToolbar();
   const countEl = toolbar.querySelector("#doget-asset-count");
@@ -187,25 +396,60 @@ function sleep(ms) {
 
 // ---- DOM scanning ----
 
+const currentScene = detectScene();
+console.log('[DoGet] Scene detected:', currentScene);
+
 function scanAndInject(root) {
-  const links = root.querySelectorAll('a[href*="/releases/download/"]');
+  const links = root.querySelectorAll('a[href]');
+  console.log('[DoGet] Scanning', links.length, 'links');
+
   for (const link of links) {
-    if (!link.hasAttribute(INJECTED_MARKER)) {
+    if (link.hasAttribute(INJECTED_MARKER)) {
+      continue;
+    }
+
+    // Scene-based link detection
+    let shouldInject = false;
+    if (currentScene === "github-release") {
+      // GitHub Release: use isAssetLink for backward compatibility
+      shouldInject = isAssetLink(link);
+    } else {
+      // Generic: use isDownloadLink for universal detection
+      shouldInject = isDownloadLink(link);
+    }
+
+    if (shouldInject) {
+      console.log('[DoGet] Injecting button for:', link.href);
       injectButton(link);
     }
   }
 }
 
 scanAndInject(document.body);
+console.log('[DoGet] Initial scan complete');
+
+// Debounced scan function for MutationObserver
+const debouncedScan = debounce((node) => {
+  if (node.tagName === "A") {
+    let shouldInject = false;
+    if (currentScene === "github-release") {
+      shouldInject = isAssetLink(node);
+    } else {
+      shouldInject = isDownloadLink(node);
+    }
+
+    if (shouldInject) {
+      injectButton(node);
+    }
+  }
+  scanAndInject(node);
+}, 300);
 
 const observer = new MutationObserver((mutations) => {
   for (const mutation of mutations) {
     for (const node of mutation.addedNodes) {
       if (node.nodeType === Node.ELEMENT_NODE) {
-        if (node.tagName === "A" && isAssetLink(node)) {
-          injectButton(node);
-        }
-        scanAndInject(node);
+        debouncedScan(node);
       }
     }
   }

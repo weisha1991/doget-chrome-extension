@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DoGet Performance Test</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 0 20px;
+      line-height: 1.6;
+    }
+    h1 { color: #333; }
+    h2 { color: #666; margin-top: 40px; }
+    .test-section {
+      margin: 20px 0;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: #f9f9f9;
+    }
+    .link-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 10px;
+      margin: 20px 0;
+    }
+    .test-link {
+      padding: 8px;
+      background: white;
+      border-radius: 4px;
+      font-size: 0.9em;
+    }
+    .stats {
+      background: #fff;
+      padding: 15px;
+      border-radius: 4px;
+      margin: 10px 0;
+    }
+    .pass { color: #22c55e; font-weight: bold; }
+    .fail { color: #ef4444; font-weight: bold; }
+    #dynamic-container {
+      min-height: 100px;
+      border: 2px dashed #ccc;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>⚡ DoGet 性能测试页面</h1>
+  <p>测试链接数量上限（100）和防抖延迟（300ms）。</p>
+
+  <h2>测试 1：链接数量上限（150 个链接）</h2>
+  <div class="test-section">
+    <p>生成 150 个下载链接，验证只注入前 100 个按钮。</p>
+    <div id="link-container" class="link-grid"></div>
+    <div class="stats">
+      <div id="limit-stats">生成中...</div>
+    </div>
+  </div>
+
+  <h2>测试 2：注入性能（耗时测量）</h2>
+  <div class="test-section">
+    <div class="stats">
+      <div id="performance-stats">等待测试 1 完成...</div>
+    </div>
+  </div>
+
+  <h2>测试 3：防抖延迟（动态添加链接）</h2>
+  <div class="test-section">
+    <p>动态添加 10 个链接，验证 MutationObserver 触发后延迟 300ms 才处理。</p>
+    <button id="add-links-btn" style="padding: 10px 20px; font-size: 16px; cursor: pointer;">
+      点击添加 10 个链接
+    </button>
+    <div id="dynamic-container"></div>
+    <div class="stats">
+      <div id="debounce-stats">等待点击按钮...</div>
+    </div>
+  </div>
+
+  <h2>📊 总体测试结果</h2>
+  <div class="test-section">
+    <div class="stats">
+      <div id="overall-stats">等待所有测试完成...</div>
+    </div>
+  </div>
+
+  <script>
+    let injectionStartTime = null;
+    let injectionEndTime = null;
+
+    // 测试 1: 生成 150 个链接
+    function generateLinks() {
+      const container = document.getElementById('link-container');
+      injectionStartTime = performance.now();
+
+      for (let i = 1; i <= 150; i++) {
+        const div = document.createElement('div');
+        div.className = 'test-link';
+        const link = document.createElement('a');
+        link.href = `https://example.com/file${i}.zip`;
+        link.textContent = `file${i}.zip`;
+        div.appendChild(link);
+        container.appendChild(div);
+      }
+
+      // 等待 1 秒后统计结果
+      setTimeout(() => {
+        checkLimitTest();
+        checkPerformanceTest();
+      }, 1000);
+    }
+
+    function checkLimitTest() {
+      const allLinks = document.querySelectorAll('#link-container a');
+      let injectedCount = 0;
+
+      allLinks.forEach(link => {
+        const wrapper = link.parentElement.querySelector('.doget-btn-wrapper');
+        if (wrapper) {
+          injectedCount++;
+        }
+      });
+
+      const limitStats = document.getElementById('limit-stats');
+      const pass = injectedCount === 100;
+
+      limitStats.innerHTML = `
+        <strong>总链接数：</strong> ${allLinks.length}<br>
+        <strong>注入按钮数：</strong> ${injectedCount}<br>
+        <strong>预期：</strong> 100<br>
+        <strong>结果：</strong> <span class="${pass ? 'pass' : 'fail'}">${pass ? '✅ 通过' : '❌ 失败'}</span>
+      `;
+
+      injectionEndTime = performance.now();
+      updateOverallStats();
+    }
+
+    function checkPerformanceTest() {
+      if (injectionStartTime && injectionEndTime) {
+        const duration = injectionEndTime - injectionStartTime;
+        const pass = duration <= 500;
+
+        const perfStats = document.getElementById('performance-stats');
+        perfStats.innerHTML = `
+          <strong>注入耗时：</strong> ${duration.toFixed(2)} ms<br>
+          <strong>预期：</strong> ≤ 500 ms<br>
+          <strong>结果：</strong> <span class="${pass ? 'pass' : 'fail'}">${pass ? '✅ 通过' : '❌ 失败'}</span>
+        `;
+
+        updateOverallStats();
+      }
+    }
+
+    // 测试 3: 防抖延迟
+    let debounceTestStartTime = null;
+    let debounceTestPassed = null;
+
+    document.getElementById('add-links-btn').addEventListener('click', () => {
+      const container = document.getElementById('dynamic-container');
+      container.innerHTML = '';
+      debounceTestStartTime = performance.now();
+
+      // 快速添加 10 个链接
+      for (let i = 1; i <= 10; i++) {
+        const link = document.createElement('a');
+        link.href = `https://example.com/dynamic${i}.zip`;
+        link.textContent = `dynamic${i}.zip`;
+        link.style.display = 'block';
+        link.style.margin = '5px 0';
+        container.appendChild(link);
+      }
+
+      // 检查按钮何时出现
+      const checkInterval = setInterval(() => {
+        const firstLink = container.querySelector('a');
+        if (firstLink) {
+          const wrapper = firstLink.parentElement.querySelector('.doget-btn-wrapper');
+          if (wrapper) {
+            clearInterval(checkInterval);
+            const elapsed = performance.now() - debounceTestStartTime;
+
+            // 防抖延迟应该在 250-350ms 之间（300ms ± 50ms 容差）
+            debounceTestPassed = elapsed >= 250 && elapsed <= 400;
+
+            const debounceStats = document.getElementById('debounce-stats');
+            debounceStats.innerHTML = `
+              <strong>按钮出现时间：</strong> ${elapsed.toFixed(2)} ms<br>
+              <strong>预期：</strong> ~300 ms (250-400 ms 范围内)<br>
+              <strong>结果：</strong> <span class="${debounceTestPassed ? 'pass' : 'fail'}">${debounceTestPassed ? '✅ 通过' : '❌ 失败'}</span>
+            `;
+
+            updateOverallStats();
+          }
+        }
+      }, 50);
+
+      // 超时保护
+      setTimeout(() => {
+        clearInterval(checkInterval);
+        if (debounceTestPassed === null) {
+          debounceTestPassed = false;
+          const debounceStats = document.getElementById('debounce-stats');
+          debounceStats.innerHTML = `
+            <strong>结果：</strong> <span class="fail">❌ 超时（按钮未出现）</span>
+          `;
+          updateOverallStats();
+        }
+      }, 2000);
+    });
+
+    function updateOverallStats() {
+      const limitStats = document.getElementById('limit-stats').textContent;
+      const perfStats = document.getElementById('performance-stats').textContent;
+      const debounceStats = document.getElementById('debounce-stats').textContent;
+
+      const test1Pass = limitStats.includes('✅');
+      const test2Pass = perfStats.includes('✅');
+      const test3Pass = debounceStats.includes('✅');
+
+      const allComplete = !limitStats.includes('生成中') &&
+                         !perfStats.includes('等待') &&
+                         debounceTestPassed !== null;
+
+      if (allComplete) {
+        const allPass = test1Pass && test2Pass && test3Pass;
+        const overallStats = document.getElementById('overall-stats');
+        overallStats.innerHTML = `
+          <strong>测试 1（链接上限）：</strong> ${test1Pass ? '✅ 通过' : '❌ 失败'}<br>
+          <strong>测试 2（注入性能）：</strong> ${test2Pass ? '✅ 通过' : '❌ 失败'}<br>
+          <strong>测试 3（防抖延迟）：</strong> ${test3Pass ? '✅ 通过' : '❌ 失败'}<br>
+          <br>
+          <strong style="font-size: 1.2em;">总体结果：</strong>
+          <span class="${allPass ? 'pass' : 'fail'}" style="font-size: 1.2em;">
+            ${allPass ? '✅ 全部通过！' : '❌ 部分失败'}
+          </span>
+        `;
+      }
+    }
+
+    // 页面加载后自动开始测试 1
+    window.addEventListener('load', () => {
+      setTimeout(generateLinks, 500);
+    });
+  </script>
+</body>
+</html>

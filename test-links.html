@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DoGet Link Detection Test</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 0 20px;
+      line-height: 1.6;
+    }
+    h1 { color: #333; }
+    h2 { color: #666; margin-top: 40px; }
+    .test-section {
+      margin: 20px 0;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: #f9f9f9;
+    }
+    .test-link {
+      display: block;
+      margin: 10px 0;
+      padding: 8px;
+      background: white;
+      border-radius: 4px;
+    }
+    .expected {
+      color: #666;
+      font-size: 0.9em;
+      margin-left: 10px;
+    }
+    .should-detect { border-left: 4px solid #22c55e; }
+    .should-not-detect { border-left: 4px solid #ef4444; }
+  </style>
+</head>
+<body>
+  <h1>🧪 DoGet 链接识别测试页面</h1>
+  <p>加载 DoGet 扩展后，应该在绿色标记的链接旁边看到"⚡ 加速下载"按钮，红色标记的链接不应该注入按钮。</p>
+
+  <h2>✅ 策略 A：文件扩展名（应该检测到）</h2>
+  <div class="test-section">
+    <div class="test-link should-detect">
+      <a href="https://example.com/files/app.zip">下载 app.zip</a>
+      <span class="expected">预期：检测到（.zip）</span>
+    </div>
+    <div class="test-link should-detect">
+      <a href="https://example.com/software.exe">下载 software.exe</a>
+      <span class="expected">预期：检测到（.exe）</span>
+    </div>
+    <div class="test-link should-detect">
+      <a href="https://example.com/package.tar.gz">下载 package.tar.gz</a>
+      <span class="expected">预期：检测到（.tar.gz）</span>
+    </div>
+    <div class="test-link should-detect">
+      <a href="https://example.com/installer.dmg">下载 installer.dmg</a>
+      <span class="expected">预期：检测到（.dmg）</span>
+    </div>
+    <div class="test-link should-detect">
+      <a href="https://example.com/app.deb">下载 app.deb</a>
+      <span class="expected">预期：检测到（.deb）</span>
+    </div>
+    <div class="test-link should-detect">
+      <a href="https://example.com/image.iso">下载 image.iso</a>
+      <span class="expected">预期：检测到（.iso）</span>
+    </div>
+  </div>
+
+  <h2>✅ 策略 B：URL 特征（应该检测到）</h2>
+  <div class="test-section">
+    <div class="test-link should-detect">
+      <a href="https://example.com/download/file">路径包含 /download/</a>
+      <span class="expected">预期：检测到（路径特征）</span>
+    </div>
+    <div class="test-link should-detect">
+      <a href="https://example.com/releases/v1.0/binary">路径包含 /releases/</a>
+      <span class="expected">预期：检测到（路径特征）</span>
+    </div>
+    <div class="test-link should-detect">
+      <a href="https://cdn.example.com/assets/file">域名以 cdn. 开头</a>
+      <span class="expected">预期：检测到（域名特征）</span>
+    </div>
+    <div class="test-link should-detect">
+      <a href="https://dl.example.com/file">域名以 dl. 开头</a>
+      <span class="expected">预期：检测到（域名特征）</span>
+    </div>
+    <div class="test-link should-detect">
+      <a href="https://example.com/file?download=true">查询参数 ?download=</a>
+      <span class="expected">预期：检测到（查询参数）</span>
+    </div>
+    <div class="test-link should-detect">
+      <a href="https://example.com/data?file=report.pdf">查询参数 ?file=</a>
+      <span class="expected">预期：检测到（查询参数）</span>
+    </div>
+  </div>
+
+  <h2>✅ 策略 C：download 属性（应该检测到）</h2>
+  <div class="test-section">
+    <div class="test-link should-detect">
+      <a href="https://example.com/document" download>带 download 属性的链接</a>
+      <span class="expected">预期：检测到（download 属性）</span>
+    </div>
+    <div class="test-link should-detect">
+      <a href="https://example.com/report" download="report.pdf">带 download="filename" 属性</a>
+      <span class="expected">预期：检测到（download 属性）</span>
+    </div>
+  </div>
+
+  <h2>❌ 普通链接（不应该检测到）</h2>
+  <div class="test-section">
+    <div class="test-link should-not-detect">
+      <a href="https://example.com/about">关于页面</a>
+      <span class="expected">预期：不检测（普通导航）</span>
+    </div>
+    <div class="test-link should-not-detect">
+      <a href="https://example.com/docs/guide">文档页面</a>
+      <span class="expected">预期：不检测（普通导航）</span>
+    </div>
+    <div class="test-link should-not-detect">
+      <a href="https://example.com/blog/post-title">博客文章</a>
+      <span class="expected">预期：不检测（普通导航）</span>
+    </div>
+    <div class="test-link should-not-detect">
+      <a href="https://example.com/products">产品列表</a>
+      <span class="expected">预期：不检测（普通导航）</span>
+    </div>
+  </div>
+
+  <h2>📊 测试结果统计</h2>
+  <div class="test-section">
+    <p id="stats">等待扩展加载...</p>
+  </div>
+
+  <script>
+    // 等待 1 秒后统计结果
+    setTimeout(() => {
+      const shouldDetect = document.querySelectorAll('.should-detect');
+      const shouldNotDetect = document.querySelectorAll('.should-not-detect');
+
+      let detected = 0;
+      let missed = 0;
+      let falsePositive = 0;
+      let correct = 0;
+
+      shouldDetect.forEach(el => {
+        const hasButton = el.querySelector('.doget-btn-wrapper') !== null;
+        if (hasButton) detected++;
+        else missed++;
+      });
+
+      shouldNotDetect.forEach(el => {
+        const hasButton = el.querySelector('.doget-btn-wrapper') !== null;
+        if (hasButton) falsePositive++;
+        else correct++;
+      });
+
+      const total = shouldDetect.length + shouldNotDetect.length;
+      const accuracy = ((detected + correct) / total * 100).toFixed(1);
+      const falsePositiveRate = (falsePositive / shouldNotDetect.length * 100).toFixed(1);
+
+      document.getElementById('stats').innerHTML = `
+        <strong>应该检测到：</strong> ${detected} / ${shouldDetect.length} (漏检: ${missed})<br>
+        <strong>不应该检测到：</strong> ${correct} / ${shouldNotDetect.length} (误检: ${falsePositive})<br>
+        <strong>总体准确率：</strong> ${accuracy}% (目标: ≥ 90%)<br>
+        <strong>误检率：</strong> ${falsePositiveRate}% (目标: < 5%)<br>
+        <br>
+        ${accuracy >= 90 && falsePositiveRate < 5 ? '✅ <strong style="color: #22c55e;">测试通过！</strong>' : '❌ <strong style="color: #ef4444;">测试未通过</strong>'}
+      `;
+    }, 1000);
+  </script>
+</body>
+</html>

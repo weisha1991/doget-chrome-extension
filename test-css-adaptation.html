@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSS 适配测试 - DoGet</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      color: #333;
+      border-bottom: 2px solid #0969da;
+      padding-bottom: 10px;
+      margin-bottom: 30px;
+    }
+    .test-section {
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+    .test-section h2 {
+      margin-top: 0;
+      color: #0969da;
+      font-size: 18px;
+    }
+    .test-case {
+      margin: 15px 0;
+      padding: 15px;
+      border-left: 3px solid #0969da;
+    }
+    .test-case h3 {
+      margin: 0 0 10px 0;
+      font-size: 14px;
+      color: #666;
+    }
+    a {
+      color: #0969da;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    .expected {
+      margin-top: 10px;
+      padding: 8px;
+      background: #fff8c5;
+      border-left: 3px solid #bf8700;
+      font-size: 13px;
+    }
+    .expected strong {
+      color: #bf8700;
+    }
+
+    /* 测试场景 1: 浅色背景 */
+    .light-bg {
+      background: #ffffff;
+      padding: 15px;
+      border-radius: 4px;
+    }
+
+    /* 测试场景 2: 深色背景 */
+    .dark-bg {
+      background: #1a1a1a;
+      color: #e0e0e0;
+      padding: 15px;
+      border-radius: 4px;
+    }
+    .dark-bg a {
+      color: #58a6ff;
+    }
+
+    /* 测试场景 3: 彩色背景 */
+    .colored-bg {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+      padding: 15px;
+      border-radius: 4px;
+    }
+    .colored-bg a {
+      color: #fff;
+      text-decoration: underline;
+    }
+
+    /* 测试场景 4: 小字体 */
+    .small-font {
+      font-size: 11px;
+      background: #f5f5f5;
+      padding: 15px;
+      border-radius: 4px;
+    }
+
+    /* 测试场景 5: 大字体 */
+    .large-font {
+      font-size: 18px;
+      background: #f5f5f5;
+      padding: 15px;
+      border-radius: 4px;
+    }
+
+    /* 测试场景 6: 自定义字体 */
+    .custom-font {
+      font-family: "Comic Sans MS", cursive;
+      font-size: 14px;
+      background: #fff9e6;
+      padding: 15px;
+      border-radius: 4px;
+    }
+
+    /* 测试场景 7: 高 z-index 元素 */
+    .high-zindex-container {
+      position: relative;
+      background: #f0f0f0;
+      padding: 15px;
+      border-radius: 4px;
+    }
+    .overlay {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      right: 10px;
+      bottom: 10px;
+      background: rgba(255, 0, 0, 0.1);
+      border: 2px dashed #ff0000;
+      z-index: 500;
+      pointer-events: none;
+    }
+    .overlay-label {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: #ff0000;
+      color: #fff;
+      padding: 2px 6px;
+      font-size: 10px;
+      border-radius: 3px;
+    }
+
+    /* 测试场景 8: 紧凑布局 */
+    .compact-layout {
+      background: #f5f5f5;
+      padding: 8px;
+      border-radius: 4px;
+      line-height: 1.2;
+    }
+    .compact-layout a {
+      font-size: 12px;
+    }
+
+    /* 测试场景 9: 宽松布局 */
+    .spacious-layout {
+      background: #f5f5f5;
+      padding: 30px;
+      border-radius: 4px;
+      line-height: 2;
+    }
+    .spacious-layout a {
+      font-size: 16px;
+    }
+
+    /* 测试场景 10: 表格布局 */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+    }
+    table th {
+      background: #f6f8fa;
+      padding: 10px;
+      text-align: left;
+      border: 1px solid #d0d7de;
+    }
+    table td {
+      padding: 10px;
+      border: 1px solid #d0d7de;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎨 CSS 适配测试</h1>
+  <p>本页面用于测试 DoGet 扩展按钮在不同样式环境下的显示效果。</p>
+
+  <!-- 测试组 1: 背景颜色适配 -->
+  <div class="test-section">
+    <h2>🌈 测试组 1: 背景颜色适配</h2>
+
+    <div class="test-case">
+      <h3>Case 1.1: 浅色背景（白色）</h3>
+      <div class="light-bg">
+        <a href="https://example.com/file-light.zip">下载文件.zip</a>
+      </div>
+      <div class="expected">
+        <strong>预期：</strong>按钮应清晰可见，绿色边框 + 白色背景 + 阴影
+      </div>
+    </div>
+
+    <div class="test-case">
+      <h3>Case 1.2: 深色背景（黑色）</h3>
+      <div class="dark-bg">
+        <a href="https://example.com/file-dark.tar.gz">下载文件.tar.gz</a>
+      </div>
+      <div class="expected">
+        <strong>预期：</strong>按钮应清晰可见，在深色背景下使用深色半透明背景
+      </div>
+    </div>
+
+    <div class="test-case">
+      <h3>Case 1.3: 彩色渐变背景</h3>
+      <div class="colored-bg">
+        <a href="https://example.com/file-colored.exe">下载安装程序.exe</a>
+      </div>
+      <div class="expected">
+        <strong>预期：</strong>按钮应清晰可见，白色背景在彩色背景上突出显示
+      </div>
+    </div>
+  </div>
+
+  <!-- 测试组 2: 字体大小适配 -->
+  <div class="test-section">
+    <h2>📏 测试组 2: 字体大小适配</h2>
+
+    <div class="test-case">
+      <h3>Case 2.1: 小字体环境（11px）</h3>
+      <div class="small-font">
+        <a href="https://example.com/file-small.dmg">下载文件.dmg</a>
+      </div>
+      <div class="expected">
+        <strong>预期：</strong>按钮大小适中，不会显得过大
+      </div>
+    </div>
+
+    <div class="test-case">
+      <h3>Case 2.2: 大字体环境（18px）</h3>
+      <div class="large-font">
+        <a href="https://example.com/file-large.deb">下载软件包.deb</a>
+      </div>
+      <div class="expected">
+        <strong>预期：</strong>按钮大小适中，不会显得过小
+      </div>
+    </div>
+
+    <div class="test-case">
+      <h3>Case 2.3: 自定义字体</h3>
+      <div class="custom-font">
+        <a href="https://example.com/file-custom.rpm">下载软件包.rpm</a>
+      </div>
+      <div class="expected">
+        <strong>预期：</strong>按钮使用标准字体，不受页面字体影响
+      </div>
+    </div>
+  </div>
+
+  <!-- 测试组 3: z-index 层级测试 -->
+  <div class="test-section">
+    <h2>📚 测试组 3: z-index 层级测试</h2>
+
+    <div class="test-case">
+      <h3>Case 3.1: 高 z-index 遮罩层（z-index: 500）</h3>
+      <div class="high-zindex-container">
+        <div class="overlay">
+          <span class="overlay-label">z-index: 500</span>
+        </div>
+        <a href="https://example.com/file-zindex.apk">下载应用.apk</a>
+      </div>
+      <div class="expected">
+        <strong>预期：</strong>按钮应显示在红色遮罩层之上（按钮 z-index: 1000）
+      </div>
+    </div>
+  </div>
+
+  <!-- 测试组 4: 布局密度适配 -->
+  <div class="test-section">
+    <h2>📐 测试组 4: 布局密度适配</h2>
+
+    <div class="test-case">
+      <h3>Case 4.1: 紧凑布局</h3>
+      <div class="compact-layout">
+        <a href="https://example.com/file-compact.msi">安装程序.msi</a>
+      </div>
+      <div class="expected">
+        <strong>预期：</strong>按钮不会破坏紧凑布局，间距合理
+      </div>
+    </div>
+
+    <div class="test-case">
+      <h3>Case 4.2: 宽松布局</h3>
+      <div class="spacious-layout">
+        <a href="https://example.com/file-spacious.pkg">安装包.pkg</a>
+      </div>
+      <div class="expected">
+        <strong>预期：</strong>按钮在宽松布局中显示协调
+      </div>
+    </div>
+  </div>
+
+  <!-- 测试组 5: 表格布局 -->
+  <div class="test-section">
+    <h2>📊 测试组 5: 表格布局</h2>
+
+    <div class="test-case">
+      <h3>Case 5.1: 表格中的下载链接</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>文件名</th>
+            <th>大小</th>
+            <th>下载链接</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>软件安装包</td>
+            <td>125 MB</td>
+            <td><a href="https://example.com/software.AppImage">software.AppImage</a></td>
+          </tr>
+          <tr>
+            <td>源代码</td>
+            <td>8.5 MB</td>
+            <td><a href="https://example.com/source.tar.gz">source.tar.gz</a></td>
+          </tr>
+          <tr>
+            <td>文档</td>
+            <td>2.1 MB</td>
+            <td><a href="https://cdn.example.com/docs.pdf">docs.pdf</a></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="expected">
+        <strong>预期：</strong>按钮在表格单元格中正常显示，不破坏表格布局
+      </div>
+    </div>
+  </div>
+
+  <!-- 测试组 6: 多链接场景 -->
+  <div class="test-section">
+    <h2>🔗 测试组 6: 多链接场景</h2>
+
+    <div class="test-case">
+      <h3>Case 6.1: 段落中的多个下载链接</h3>
+      <p>
+        请根据您的操作系统选择合适的版本：
+        <a href="https://example.com/app-windows.exe">Windows 版本</a>、
+        <a href="https://example.com/app-macos.dmg">macOS 版本</a>、
+        <a href="https://example.com/app-linux.deb">Linux (Debian)</a> 或
+        <a href="https://example.com/app-linux.rpm">Linux (RedHat)</a>。
+        您也可以下载
+        <a href="https://example.com/source.zip">源代码</a>
+        自行编译。
+      </p>
+      <div class="expected">
+        <strong>预期：</strong>所有下载链接都应注入按钮，按钮之间不会相互干扰
+      </div>
+    </div>
+
+    <div class="test-case">
+      <h3>Case 6.2: 列表中的下载链接</h3>
+      <ul>
+        <li><a href="https://example.com/v1.0.zip">版本 1.0</a> - 稳定版</li>
+        <li><a href="https://example.com/v1.1-beta.tar.gz">版本 1.1 Beta</a> - 测试版</li>
+        <li><a href="https://example.com/v2.0-alpha.7z">版本 2.0 Alpha</a> - 开发版</li>
+      </ul>
+      <div class="expected">
+        <strong>预期：</strong>列表项中的按钮对齐良好
+      </div>
+    </div>
+  </div>
+
+  <!-- 验证说明 -->
+  <div class="test-section">
+    <h2>📋 验证步骤</h2>
+    <ol>
+      <li>确保 DoGet 扩展已加载并启用</li>
+      <li>刷新本页面</li>
+      <li>检查每个测试用例中的按钮显示效果</li>
+      <li>验证按钮在不同背景下都清晰可见</li>
+      <li>验证按钮不会被其他元素遮挡（z-index 测试）</li>
+      <li>验证按钮在不同字体大小环境下显示协调</li>
+      <li>验证按钮不会破坏原页面布局</li>
+      <li>测试按钮的 hover 效果</li>
+    </ol>
+  </div>
+
+  <!-- 统计信息 -->
+  <div class="test-section">
+    <h2>📊 测试统计</h2>
+    <p>总测试用例数：<strong>15</strong></p>
+    <ul>
+      <li>背景颜色适配：3 个</li>
+      <li>字体大小适配：3 个</li>
+      <li>z-index 层级：1 个</li>
+      <li>布局密度：2 个</li>
+      <li>表格布局：1 个（3 个链接）</li>
+      <li>多链接场景：2 个（9 个链接）</li>
+    </ul>
+    <p>总下载链接数：<strong>22</strong></p>
+  </div>
+</body>
+</html>
